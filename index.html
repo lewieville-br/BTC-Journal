@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitcoin Trading Journal</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="btc.png" type="image/png">
+    <link rel="icon" href="imgs/btc.png" type="image/png">
 </head>
 <body>
     <header class="header">
-        <h1>Andy BTC Trading Journal</h1><a href="https://lewieville-br.github.io/BTCAndy.github.io/index.html" style="text-decoration: none;">
-        <div class="bitcoin-logo">
-            <div class="b-text">
-                <span>B</span>
-                <div class="lines"></div>
-            </div></a>
+        <h1>Andy BTC Trading Journal</h1>
+        <a href="https://lewieville-br.github.io/BTCAndy.github.io/index.html" style="text-decoration: none;">
+            <div class="bitcoin-logo">
+                <div class="b-text">
+                    <span>B</span>
+                    <div class="lines"></div>
+                </div>
+            </div>
+        </a>
     </header>
 
     <main class="main-content">
@@ -28,7 +31,13 @@
                 <input type="number" id="entryPrice" name="entryPrice" step="0.01" required>
 
                 <label for="exitPrice">Exit Price:</label>
-                <input type="number" id="exitPrice" name="exitPrice" step="0.01" required>
+                <input type="number" id="exitPrice" name="exitPrice" step="0.01">
+
+                <label for="investmentAmount">Investment Amount:</label>
+                <input type="number" id="investmentAmount" name="investmentAmount" step="0.01" required>
+
+                <label for="leverage">Leverage:</label>
+                <input type="number" id="leverage" name="leverage" step="1" min="1" value="1" required>
 
                 <label for="tradeType">Trade Type:</label>
                 <select id="tradeType" name="tradeType" required>
@@ -39,6 +48,7 @@
                 <label for="notes">Notes:</label>
                 <textarea id="notes" name="notes"></textarea>
 
+                <p id="potentialProfit" class="potential-profit">Potential Profit: $0.00</p>
                 <button type="submit">Add Trade</button>
             </form>
         </section>
@@ -51,6 +61,8 @@
                         <th>Date</th>
                         <th>Entry Price</th>
                         <th>Exit Price</th>
+                        <th>Investment</th>
+                        <th>Leverage</th>
                         <th>Trade Type</th>
                         <th>Profit/Loss</th>
                         <th>Notes</th>
@@ -65,6 +77,5 @@
 
     <script src="script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
-
 </body>
 </html>
