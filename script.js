@@ -6,6 +6,68 @@ function formatCurrency(value) {
     }).format(value);
 }
 
+// Update potential profit on user input
+function updatePotentialProfit() {
+    const entryPrice = parseFloat(document.getElementById("entryPrice").value) || 0;
+    const exitPrice = parseFloat(document.getElementById("exitPrice").value) || 0;
+    const investment = parseFloat(document.getElementById("investmentAmount").value) || 0;
+    const leverage = parseFloat(document.getElementById("leverage").value) || 1;
+    const tradeType = document.getElementById("tradeType").value;
+
+    let profit = 0;
+
+    if (tradeType === "long") {
+        profit = ((exitPrice - entryPrice) * investment * leverage) / entryPrice;
+    } else if (tradeType === "short") {
+        profit = ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
+    }
+
+    const potentialProfitDisplay = document.getElementById("potentialProfit");
+    potentialProfitDisplay.textContent = `Potential Profit: ${formatCurrency(profit)}`;
+}
+
+// Attach event listeners for inputs that affect potential profit
+document.getElementById("entryPrice").addEventListener("input", updatePotentialProfit);
+document.getElementById("exitPrice").addEventListener("input", updatePotentialProfit);
+document.getElementById("investmentAmount").addEventListener("input", updatePotentialProfit);
+document.getElementById("leverage").addEventListener("input", updatePotentialProfit);
+document.getElementById("tradeType").addEventListener("change", updatePotentialProfit);
+
+// Existing trade form submission logic
+document.getElementById("tradeForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const tradeDate = document.getElementById("tradeDate").value;
+    const entryPrice = parseFloat(document.getElementById("entryPrice").value);
+    const exitPrice = parseFloat(document.getElementById("exitPrice").value) || 0;
+    const investment = parseFloat(document.getElementById("investmentAmount").value);
+    const leverage = parseFloat(document.getElementById("leverage").value);
+    const tradeType = document.getElementById("tradeType").value;
+    const notes = document.getElementById("notes").value;
+
+    const profitLoss =
+        tradeType === "long"
+            ? ((exitPrice - entryPrice) * investment * leverage) / entryPrice
+            : ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
+
+    const tradeRow = document.createElement("tr");
+    tradeRow.innerHTML = `
+        <td>${tradeDate}</td>
+        <td>${formatCurrency(entryPrice)}</td>
+        <td>${formatCurrency(exitPrice)}</td>
+        <td>${formatCurrency(investment)}</td>
+        <td>${leverage}</td>
+        <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
+        <td>${formatCurrency(profitLoss)}</td>
+        <td>${notes || "N/A"}</td>
+    `;
+
+    document.querySelector("#tradeTable tbody").appendChild(tradeRow);
+
+    document.getElementById("tradeForm").reset();
+    updatePotentialProfit(); // Reset potential profit display
+});
+
 // Function to fetch and display the current Bitcoin price with percentage change
 async function fetchAndDisplayBTCPrice() {
     try {
@@ -55,68 +117,22 @@ setInterval(() => {
     fetchAndDisplayBTCPrice();
 }, 500);
 
-// Trade form submission
-document.getElementById("tradeForm").addEventListener("submit", async function(event) {
-    event.preventDefault();
-
-    const tradeDate = document.getElementById("tradeDate").value;
-    const entryPrice = parseFloat(document.getElementById("entryPrice").value);
-    const exitPriceInput = document.getElementById("exitPrice").value; // New input field for exit price
-    const tradeType = document.getElementById("tradeType").value;
-    const notes = document.getElementById("notes").value;
-
-    let exitPrice;
-
-    if (exitPriceInput) {
-        // Use user-provided exit price
-        exitPrice = parseFloat(exitPriceInput);
-    } else {
-        // Fetch the current Bitcoin price dynamically if exit price is not provided
-        try {
-            const response = await fetch("https://api.coindesk.com/v1/bpi/currentprice/BTC.json");
-            const data = await response.json();
-            const rate = data.bpi?.USD?.rate;
-            if (rate) {
-                exitPrice = parseFloat(rate.replace(/,/g, ''));
-            } else {
-                throw new Error("Invalid API response format");
-            }
-        } catch (error) {
-            console.error("Error fetching Bitcoin price:", error);
-            alert("Unable to fetch the current Bitcoin price. Please try again later.");
-            return;
-        }
-    }
-
-    const profitLoss = tradeType === "long"
-        ? (exitPrice - entryPrice).toFixed(2)
-        : (entryPrice - exitPrice).toFixed(2);
-
-    const tradeRow = document.createElement("tr");
-    tradeRow.innerHTML = `
-        <td>${tradeDate}</td>
-        <td>${formatCurrency(entryPrice)}</td>
-        <td>${formatCurrency(exitPrice)}</td>
-        <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
-        <td>${formatCurrency(profitLoss)}</td>
-        <td>${notes}</td>
-    `;
-
-    document.querySelector("#tradeTable tbody").appendChild(tradeRow);
-
-    document.getElementById("tradeForm").reset();
-});
-
 // Function to download trade history as an XLSX file
 function downloadTradeHistory() {
     const rows = document.querySelectorAll("#tradeTable tbody tr");
     const tradeData = [
-        ["Date", "Entry Price", "Exit Price", "Type", "Profit/Loss", "Notes"]
+        ["Date", "Entry Price", "Exit Price", "Investment", "Leverage", "Trade Type", "Profit/Loss", "Notes"]
     ];
 
     rows.forEach(row => {
         const cells = row.querySelectorAll("td");
-        const rowData = Array.from(cells).map(cell => cell.textContent);
+        const rowData = Array.from(cells).map((cell, index) => {
+            // Remove currency formatting for numeric fields (columns 1–6)
+            if ([1, 2, 3, 6].includes(index)) {
+                return parseFloat(cell.textContent.replace(/[^0-9.-]+/g, "")) || 0; // Convert to raw number
+            }
+            return cell.textContent.trim(); // Keep other data as-is
+        });
         tradeData.push(rowData);
     });
 
@@ -125,6 +141,7 @@ function downloadTradeHistory() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Trades");
     XLSX.writeFile(workbook, "Trade_History.xlsx");
 }
+
 
 // Add a download button to the page
 const downloadButton = document.createElement("button");
@@ -155,15 +172,29 @@ function handleFileUpload(event) {
 
         const tbody = document.querySelector("#tradeTable tbody");
         tradeData.slice(1).forEach(row => {
-            if (row.length === 6) {
+            // Ensure row has all required columns
+            if (row.length >= 8) {
+                const [
+                    tradeDate, 
+                    entryPrice, 
+                    exitPrice, 
+                    investment, 
+                    leverage, 
+                    tradeType, 
+                    profitLoss, 
+                    notes
+                ] = row;
+
                 const tradeRow = document.createElement("tr");
                 tradeRow.innerHTML = `
-                    <td>${row[0]}</td>
-                    <td>${formatCurrency(parseFloat(row[1]))}</td>
-                    <td>${formatCurrency(parseFloat(row[2]))}</td>
-                    <td>${row[3]}</td>
-                    <td>${formatCurrency(parseFloat(row[4]))}</td>
-                    <td>${row[5]}</td>
+                    <td>${tradeDate || "N/A"}</td>
+                    <td>${formatCurrency(parseFloat(entryPrice)) || "N/A"}</td>
+                    <td>${formatCurrency(parseFloat(exitPrice)) || "N/A"}</td>
+                    <td>${formatCurrency(parseFloat(investment)) || "N/A"}</td>
+                    <td>${leverage || "1"}</td>
+                    <td>${tradeType || "N/A"}</td>
+                    <td>${formatCurrency(parseFloat(profitLoss)) || "N/A"}</td>
+                    <td>${notes || "N/A"}</td>
                 `;
                 tbody.appendChild(tradeRow);
             }
@@ -171,6 +202,10 @@ function handleFileUpload(event) {
     };
     reader.readAsArrayBuffer(file);
 }
+
+
+
+
 
 // Add an upload input to the page
 const uploadWrapper = document.createElement("div");
