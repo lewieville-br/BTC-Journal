@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Trading Journal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <h1>Andy BTC Trading Journal</h1><a href="https://lewieville-br.github.io/BTCAndy.github.io/index.html" style="text-decoration: none;">
+        <div class="bitcoin-logo">
+            <div class="b-text">
+                <span>B</span>
+                <div class="lines"></div>
+            </div></a>
+    </header>
+
+    <main class="main-content">
+        <section class="journal-form">
+            <h2>Add a Trade</h2>
+            <form id="tradeForm">
+                <label for="tradeDate">Date:</label>
+                <input type="date" id="tradeDate" name="tradeDate" required>
+
+                <label for="entryPrice">Entry Price:</label>
+                <input type="number" id="entryPrice" name="entryPrice" step="0.01" required>
+
+                <label for="exitPrice">Exit Price:</label>
+                <input type="number" id="exitPrice" name="exitPrice" step="0.01" required>
+
+                <label for="tradeType">Trade Type:</label>
+                <select id="tradeType" name="tradeType" required>
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
+                </select>
+
+                <label for="notes">Notes:</label>
+                <textarea id="notes" name="notes"></textarea>
+
+                <button type="submit">Add Trade</button>
+            </form>
+        </section>
+
+        <section class="journal-entries">
+            <h2>Trade History</h2>
+            <table id="tradeTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Entry Price</th>
+                        <th>Exit Price</th>
+                        <th>Trade Type</th>
+                        <th>Profit/Loss</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Trade entries will be dynamically added here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom right, #1e3c72, #2a5298); /* Subtle blue gradient */
+    color: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    background: #112240;
+    color: #f5f5f5;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    border-bottom: 3px solid #2a5298;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bitcoin-logo {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background-color: #f7931a;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    margin-right: 50%;
+    justify-content: center;
+    align-items: center;
+}
+
+.b-text {
+    position: relative;
+    color: white;
+    font-weight: bold;
+    font-size: 4rem;
+    font-family: Arial, sans-serif;
+    transform: rotate(-15deg);
+}
+
+.b-text span {
+    position: relative;
+    z-index: 2;
+}
+
+.b-text .lines {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 6px;
+    background-color: white;
+    transform: translateX(-50%);
+    z-index: 1;
+    height: 100%;
+}
+
+.b-text .lines::before,
+.b-text .lines::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    background-color: white;
+    height: 100%;
+    transform: translateX(-50%);
+}
+
+.b-text .lines::before {
+    left: -15px;
+}
+
+.b-text .lines::after {
+    left: 15px;
+}
+.header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.header img {
+    height: 40px;
+    margin-left: 10px;
+}
+
+/* BTC Price Display */
+#btcPrice {
+    padding: 15px;
+    margin: 20px auto;
+    background: #273c75;
+    color: #f5f5f5;
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+#btcPrice .price-value {
+    font-size: 1.8rem;
+    color: #4cd137;
+}
+
+#btcPrice .timer {
+    font-size: 1rem;
+    color: #f5f5f5;
+}
+
+/* Main Content */
+.main-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Journal Form */
+.journal-form {
+    background: #34495e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.journal-form h2 {
+    margin-top: 0;
+    color: #f5f5f5;
+}
+
+.journal-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-size: 1rem;
+    color: #bdc3c7;
+}
+
+.journal-form input,
+.journal-form select,
+.journal-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    background: #2c3e50;
+    color: #f5f5f5;
+}
+
+.journal-form button {
+    background: #27ae60;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.journal-form button:hover {
+    background-image:linear-gradient(#2ecc71, green);
+    padding: 15px 20px;
+    transition: ease-in-out .5s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+}
+
+/* Journal Entries */
+.journal-entries {
+    background: #34495e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.journal-entries h2 {
+    margin-top: 0;
+    color: #f5f5f5;
+}
+
+.journal-entries table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #2c3e50;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.journal-entries table th,
+.journal-entries table td {
+    border: 1px solid #bdc3c7;
+    padding: 10px;
+    text-align: left;
+    color: #f5f5f5;
+}
+
+.journal-entries table th {
+    background: #1e272e;
+    font-size: 1rem;
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .header {
+        font-size: 1.4rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #btcPrice {
+        flex-direction: column;
+    }
+}
