@@ -33,7 +33,7 @@ document.getElementById("investmentAmount").addEventListener("input", updatePote
 document.getElementById("leverage").addEventListener("input", updatePotentialProfit);
 document.getElementById("tradeType").addEventListener("change", updatePotentialProfit);
 
-// Existing trade form submission logic
+// Handle form submission
 document.getElementById("tradeForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
@@ -50,6 +50,7 @@ document.getElementById("tradeForm").addEventListener("submit", function (event)
             ? ((exitPrice - entryPrice) * investment * leverage) / entryPrice
             : ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
 
+    // Create a new row
     const tradeRow = document.createElement("tr");
     tradeRow.innerHTML = `
         <td>${tradeDate}</td>
@@ -60,12 +61,44 @@ document.getElementById("tradeForm").addEventListener("submit", function (event)
         <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
         <td>${formatCurrency(profitLoss)}</td>
         <td>${notes || "N/A"}</td>
+        <td>
+            <button class="edit-button">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="delete-button">
+                <span class="material-icons">delete</span>
+            </button>
+        </td>
     `;
-
     document.querySelector("#tradeTable tbody").appendChild(tradeRow);
 
     document.getElementById("tradeForm").reset();
     updatePotentialProfit(); // Reset potential profit display
+});
+
+// Handle edit and delete actions
+document.querySelector("#tradeTable tbody").addEventListener("click", function (event) {
+    const target = event.target;
+
+    if (target.closest(".edit-button")) {
+        const row = target.closest("tr");
+        const cells = row.querySelectorAll("td");
+
+        // Populate the form with the row data
+        document.getElementById("tradeDate").value = cells[0].textContent;
+        document.getElementById("entryPrice").value = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g, ""));
+        document.getElementById("exitPrice").value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g, ""));
+        document.getElementById("investmentAmount").value = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, ""));
+        document.getElementById("leverage").value = cells[4].textContent;
+        document.getElementById("tradeType").value = cells[5].textContent.toLowerCase();
+        document.getElementById("notes").value = cells[7].textContent;
+
+        // Remove the row for re-editing
+        row.remove();
+    } else if (target.closest(".delete-button")) {
+        const row = target.closest("tr");
+        row.remove(); // Delete the row
+    }
 });
 
 // Function to fetch and display the current Bitcoin price with percentage change
@@ -73,10 +106,12 @@ async function fetchAndDisplayBTCPrice() {
     try {
         const response = await fetch("https://api.coindesk.com/v1/bpi/currentprice/BTC.json");
         const data = await response.json();
-        const currentPrice = parseFloat(data.bpi.USD.rate.replace(/,/g, ''));
+        const currentPrice = parseFloat(data.bpi.USD.rate.replace(/,/g, ""));
 
         // Fetch historical price for the previous day
-        const historicalResponse = await fetch("https://api.coindesk.com/v1/bpi/historical/close.json?for=yesterday");
+        const historicalResponse = await fetch(
+            "https://api.coindesk.com/v1/bpi/historical/close.json?for=yesterday"
+        );
         const historicalData = await historicalResponse.json();
         const yesterdayPrice = Object.values(historicalData.bpi)[0];
 
@@ -92,18 +127,9 @@ async function fetchAndDisplayBTCPrice() {
         } else {
             const priceElement = document.createElement("div");
             priceElement.id = "btcPrice";
+            priceElement.style.textAlign = "center"; // Center the price display
             priceElement.style.padding = "15px";
-            priceElement.style.margin = "20px auto";
-            priceElement.style.color = "#fff";
-            priceElement.style.fontSize = "1.5rem";
-            priceElement.style.textAlign = "center";
-            priceElement.style.borderRadius = "12px";
-            priceElement.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-            priceElement.style.maxWidth = "500px";
-            priceElement.style.fontFamily = "Arial, sans-serif";
-            priceElement.style.fontWeight = "bold";
             priceElement.textContent = displayText;
-
             document.body.insertBefore(priceElement, document.body.firstChild);
         }
     } catch (error) {
@@ -113,9 +139,12 @@ async function fetchAndDisplayBTCPrice() {
 
 // Initial fetch and interval setup
 fetchAndDisplayBTCPrice();
-setInterval(() => {
-    fetchAndDisplayBTCPrice();
-}, 500);
+setInterval(fetchAndDisplayBTCPrice, 500);
+
+
+
+
+
 
 // Function to download trade history as an XLSX file
 function downloadTradeHistory() {
@@ -240,3 +269,4 @@ uploadInput.addEventListener("change", handleFileUpload);
 uploadWrapper.appendChild(uploadLabel);
 uploadWrapper.appendChild(uploadInput);
 document.body.appendChild(uploadWrapper);
+
