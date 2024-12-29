@@ -136,14 +136,10 @@ async function fetchAndDisplayBTCPrice() {
         console.error("Error fetching Bitcoin price:", error);
     }
 }
-
+ 
 // Initial fetch and interval setup
 fetchAndDisplayBTCPrice();
 setInterval(fetchAndDisplayBTCPrice, 500);
-
-
-
-
 
 
 // Function to download trade history as an XLSX file
@@ -171,7 +167,6 @@ function downloadTradeHistory() {
     XLSX.writeFile(workbook, "Trade_History.xlsx");
 }
 
-
 // Add a download button to the page
 const downloadButton = document.createElement("button");
 downloadButton.textContent = "Download Trade History";
@@ -186,54 +181,77 @@ downloadButton.style.cursor = "pointer";
 downloadButton.addEventListener("click", downloadTradeHistory);
 document.body.appendChild(downloadButton);
 
-// Function to upload an XLSX file and update trade journal
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const tradeData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    reader.onload = function (e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const tradeData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        const tbody = document.querySelector("#tradeTable tbody");
-        tradeData.slice(1).forEach(row => {
-            // Ensure row has all required columns
-            if (row.length >= 8) {
+            if (!tradeData || tradeData.length < 2) {
+                alert("Uploaded file is empty or improperly formatted.");
+                return;
+            }
+
+            const tbody = document.querySelector("#tradeTable tbody");
+            tradeData.slice(1).forEach((row, index) => {
+                if (row.length < 8) {
+                    console.error(`Skipping row ${index + 2}: Incomplete data`, row);
+                    return; // Skip rows with missing columns
+                }
+
                 const [
-                    tradeDate, 
-                    entryPrice, 
-                    exitPrice, 
-                    investment, 
-                    leverage, 
-                    tradeType, 
-                    profitLoss, 
+                    tradeDate,
+                    entryPrice,
+                    exitPrice,
+                    investment,
+                    leverage,
+                    tradeType,
+                    profitLoss,
                     notes
                 ] = row;
 
+                if (!tradeDate || !entryPrice || !investment || !leverage || !tradeType) {
+                    console.error(`Skipping row ${index + 2}: Missing required fields`, row);
+                    return;
+                }
+
                 const tradeRow = document.createElement("tr");
                 tradeRow.innerHTML = `
-                    <td>${tradeDate || "N/A"}</td>
-                    <td>${formatCurrency(parseFloat(entryPrice)) || "N/A"}</td>
-                    <td>${formatCurrency(parseFloat(exitPrice)) || "N/A"}</td>
-                    <td>${formatCurrency(parseFloat(investment)) || "N/A"}</td>
+                    <td>${tradeDate}</td>
+                    <td>${formatCurrency(parseFloat(entryPrice) || 0)}</td>
+                    <td>${formatCurrency(parseFloat(exitPrice) || 0)}</td>
+                    <td>${formatCurrency(parseFloat(investment) || 0)}</td>
                     <td>${leverage || "1"}</td>
-                    <td>${tradeType || "N/A"}</td>
-                    <td>${formatCurrency(parseFloat(profitLoss)) || "N/A"}</td>
+                    <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
+                    <td>${formatCurrency(parseFloat(profitLoss) || 0)}</td>
                     <td>${notes || "N/A"}</td>
+                    <td>
+                        <button class="edit-button">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="delete-button">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tradeRow);
-            }
-        });
+            });
+
+            alert("Trade history uploaded successfully.");
+        } catch (error) {
+            console.error("Error processing the uploaded file:", error);
+            alert("Failed to upload the file. Please ensure it is a valid XLSX file with the correct format.");
+        }
     };
     reader.readAsArrayBuffer(file);
 }
-
-
-
 
 
 // Add an upload input to the page
