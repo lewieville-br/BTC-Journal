@@ -1,290 +1,263 @@
-// Function to format numbers as currency
-function formatCurrency(value) {
-    return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-    }).format(value);
-}
-
-// Update potential profit on user input
-function updatePotentialProfit() {
-    const entryPrice = parseFloat(document.getElementById("entryPrice").value) || 0;
-    const exitPrice = parseFloat(document.getElementById("exitPrice").value) || 0;
-    const investment = parseFloat(document.getElementById("investmentAmount").value) || 0;
-    const leverage = parseFloat(document.getElementById("leverage").value) || 1;
-    const tradeType = document.getElementById("tradeType").value;
-
-    let profit = 0;
-
-    if (tradeType === "long") {
-        profit = ((exitPrice - entryPrice) * investment * leverage) / entryPrice;
-    } else if (tradeType === "short") {
-        profit = ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
-    }
-
-    const potentialProfitDisplay = document.getElementById("potentialProfit");
-    potentialProfitDisplay.textContent = `Potential Profit: ${formatCurrency(profit)}`;
-}
-
-// Attach event listeners for inputs that affect potential profit
-document.getElementById("entryPrice").addEventListener("input", updatePotentialProfit);
-document.getElementById("exitPrice").addEventListener("input", updatePotentialProfit);
-document.getElementById("investmentAmount").addEventListener("input", updatePotentialProfit);
-document.getElementById("leverage").addEventListener("input", updatePotentialProfit);
-document.getElementById("tradeType").addEventListener("change", updatePotentialProfit);
-
-// Handle form submission
-document.getElementById("tradeForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const tradeDate = document.getElementById("tradeDate").value;
-    const entryPrice = parseFloat(document.getElementById("entryPrice").value);
-    const exitPrice = parseFloat(document.getElementById("exitPrice").value) || 0;
-    const investment = parseFloat(document.getElementById("investmentAmount").value);
-    const leverage = parseFloat(document.getElementById("leverage").value);
-    const tradeType = document.getElementById("tradeType").value;
-    const notes = document.getElementById("notes").value;
-
-    const profitLoss =
-        tradeType === "long"
-            ? ((exitPrice - entryPrice) * investment * leverage) / entryPrice
-            : ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
-
-    // Create a new row
-    const tradeRow = document.createElement("tr");
-    tradeRow.innerHTML = `
-        <td>${tradeDate}</td>
-        <td>${formatCurrency(entryPrice)}</td>
-        <td>${formatCurrency(exitPrice)}</td>
-        <td>${formatCurrency(investment)}</td>
-        <td>${leverage}</td>
-        <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
-        <td>${formatCurrency(profitLoss)}</td>
-        <td>${notes || "N/A"}</td>
-        <td>
-            <button class="edit-button">
-                <span class="material-icons">edit</span>
-            </button>
-            <button class="delete-button">
-                <span class="material-icons">delete</span>
-            </button>
-        </td>
-    `;
-    document.querySelector("#tradeTable tbody").appendChild(tradeRow);
-
-    document.getElementById("tradeForm").reset();
-    updatePotentialProfit(); // Reset potential profit display
-});
-
-// Handle edit and delete actions
-document.querySelector("#tradeTable tbody").addEventListener("click", function (event) {
-    const target = event.target;
-
-    if (target.closest(".edit-button")) {
-        const row = target.closest("tr");
-        const cells = row.querySelectorAll("td");
-
-        // Populate the form with the row data
-        document.getElementById("tradeDate").value = cells[0].textContent;
-        document.getElementById("entryPrice").value = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g, ""));
-        document.getElementById("exitPrice").value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g, ""));
-        document.getElementById("investmentAmount").value = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, ""));
-        document.getElementById("leverage").value = cells[4].textContent;
-        document.getElementById("tradeType").value = cells[5].textContent.toLowerCase();
-        document.getElementById("notes").value = cells[7].textContent;
-
-        // Remove the row for re-editing
-        row.remove();
-    } else if (target.closest(".delete-button")) {
-        const row = target.closest("tr");
-        row.remove(); // Delete the row
-    }
-});
-
-// Function to fetch and display the current Bitcoin price with percentage change
-async function fetchAndDisplayBTCPrice() {
-    try {
-        const response = await fetch("https://api.coindesk.com/v1/bpi/currentprice/BTC.json");
-        const data = await response.json();
-        const currentPrice = parseFloat(data.bpi.USD.rate.replace(/,/g, ""));
-
-        // Fetch historical price for the previous day
-        const historicalResponse = await fetch(
-            "https://api.coindesk.com/v1/bpi/historical/close.json?for=yesterday"
-        );
-        const historicalData = await historicalResponse.json();
-        const yesterdayPrice = Object.values(historicalData.bpi)[0];
-
-        // Calculate the percentage change
-        const percentageChange = (((currentPrice - yesterdayPrice) / yesterdayPrice) * 100).toFixed(2);
-
-        // Display the current price and percentage change
-        const priceDisplay = document.getElementById("btcPrice");
-        const displayText = `Current BTC Price: ${formatCurrency(currentPrice)} (${percentageChange > 0 ? "+" : ""}${percentageChange}%)`;
-
-        if (priceDisplay) {
-            priceDisplay.textContent = displayText;
-        } else {
-            const priceElement = document.createElement("div");
-            priceElement.id = "btcPrice";
-            priceElement.style.textAlign = "center"; // Center the price display
-            priceElement.style.padding = "15px";
-            priceElement.textContent = displayText;
-            document.body.insertBefore(priceElement, document.body.firstChild);
+        // Function to format numbers as currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+            }).format(value);
         }
-    } catch (error) {
-        console.error("Error fetching Bitcoin price:", error);
-    }
-}
- 
-// Initial fetch and interval setup
-fetchAndDisplayBTCPrice();
-setInterval(fetchAndDisplayBTCPrice, 500);
+            // Function to fetch and display the current Bitcoin price with percentage change
+        async function fetchAndDisplayBTCPrice() {
+            try {
+                const response = await fetch("https://api.coindesk.com/v1/bpi/currentprice/BTC.json");
+                const data = await response.json();
+                const currentPrice = parseFloat(data.bpi.USD.rate.replace(/,/g, ""));
 
+                // Fetch historical price for the previous day
+                const historicalResponse = await fetch(
+                    "https://api.coindesk.com/v1/bpi/historical/close.json?for=yesterday"
+                );
+                const historicalData = await historicalResponse.json();
+                const yesterdayPrice = Object.values(historicalData.bpi)[0];
 
-// Function to download trade history as an XLSX file
-function downloadTradeHistory() {
-    const rows = document.querySelectorAll("#tradeTable tbody tr");
-    const tradeData = [
-        ["Date", "Entry Price", "Exit Price", "Investment", "Leverage", "Trade Type", "Profit/Loss", "Notes"]
-    ];
+                // Calculate the percentage change
+                const percentageChange = (((currentPrice - yesterdayPrice) / yesterdayPrice) * 100).toFixed(2);
 
-    rows.forEach(row => {
-        const cells = row.querySelectorAll("td");
-        const rowData = Array.from(cells).map((cell, index) => {
-            // Remove currency formatting for numeric fields (columns 1–6)
-            if ([1, 2, 3, 6].includes(index)) {
-                return parseFloat(cell.textContent.replace(/[^0-9.-]+/g, "")) || 0; // Convert to raw number
+                // Display the current price and percentage change
+                const priceDisplay = document.getElementById("btcPrice");
+                const displayText = `Current BTC Price: ${formatCurrency(currentPrice)} (${percentageChange > 0 ? "+" : ""}${percentageChange}%)`;
+
+                if (priceDisplay) {
+                    priceDisplay.textContent = displayText;
+                } else {
+                    const priceElement = document.createElement("div");
+                    priceElement.id = "btcPrice";
+                    priceElement.style.textAlign = "center"; // Center the price display
+                    priceElement.style.padding = "15px";
+                    priceElement.textContent = displayText;
+                    document.body.insertBefore(priceElement, document.body.firstChild);
+                }
+            } catch (error) {
+                console.error("Error fetching Bitcoin price:", error);
             }
-            return cell.textContent.trim(); // Keep other data as-is
+        }
+
+        // Initial fetch and interval setup
+        fetchAndDisplayBTCPrice();
+        setInterval(fetchAndDisplayBTCPrice, 500);
+
+        // Login functionality
+        const loginForm = document.getElementById('login-form');
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.querySelector('.dashboard-container');
+        const loginMessage = document.getElementById('login-message');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Simple hardcoded authentication for demonstration
+            if (username === 'andy' && password === '1234') {
+                loginContainer.classList.add('hidden');
+                dashboardContainer.classList.remove('hidden');
+            } else {
+                loginMessage.textContent = 'Invalid username or password';
+                loginMessage.style.color = 'red';
+            }
         });
-        tradeData.push(rowData);
+
+        // Sidebar navigation interaction
+        document.querySelectorAll('.sidebar nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+                document.querySelectorAll('.sidebar nav a').forEach(navLink => navLink.classList.remove('active'));
+
+                const targetSection = document.querySelector(link.getAttribute('href'));
+                targetSection.classList.remove('hidden');
+                link.classList.add('active');
+            });
+        });
+
+        // Initialize Chart.js for the profit trend chart
+        const ctx = document.getElementById('profitTrendChart').getContext('2d');
+        const profitTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Profit Trend',
+                    data: [300, 600, 400, 800, 700, 900],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+            }
+        });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const tradeForm = document.getElementById("tradeForm");
+        const tradeHistoryTable = document.getElementById("tradeHistoryTable");
+    
+        // Handle form submission
+        tradeForm.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent form from reloading the page
+    
+            // Fetch values from the form
+            const tradeDate = document.getElementById("tradeDate").value;
+            const entryPrice = parseFloat(document.getElementById("entryPrice").value);
+            const exitPrice = parseFloat(document.getElementById("exitPrice").value) || 0;
+            const investment = parseFloat(document.getElementById("investmentAmount").value);
+            const leverage = parseFloat(document.getElementById("leverage").value);
+            const tradeType = document.getElementById("tradeType").value;
+            const notes = document.getElementById("notes").value || "N/A";
+    
+            // Calculate profit or loss
+            const profitLoss =
+                tradeType === "long"
+                    ? ((exitPrice - entryPrice) * investment * leverage) / entryPrice
+                    : ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
+    
+            // Format values
+            const formattedEntryPrice = formatCurrency(entryPrice);
+            const formattedExitPrice = exitPrice ? formatCurrency(exitPrice) : "N/A";
+            const formattedInvestment = formatCurrency(investment);
+            const formattedProfitLoss = formatCurrency(profitLoss);
+    
+            // Add a new row to the trade history table
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td>${tradeDate}</td>
+                <td>${formattedEntryPrice}</td>
+                <td>${formattedExitPrice}</td>
+                <td>${formattedInvestment}</td>
+                <td>${formattedProfitLoss}</td>
+                <td>${leverage}</td>
+                <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
+                <td>${notes}</td>
+            `;
+            tradeHistoryTable.appendChild(newRow);
+    
+            // Reset the form for new input
+            tradeForm.reset();
+            updatePotentialProfit(); // Reset the potential profit display
+            alert("Trade added to history!");
+        });
     });
+    
+    function updatePotentialProfit() {
+        // Fetch values from the Add Trade form
+        const entryPrice = parseFloat(document.querySelector("#open-trade #entryPrice").value) || 0;
+        const exitPrice = parseFloat(document.querySelector("#open-trade #exitPrice").value) || 0;
+        const investment = parseFloat(document.querySelector("#open-trade #investmentAmount").value) || 0;
+        const leverage = parseFloat(document.querySelector("#open-trade #leverage").value) || 1;
+        const tradeType = document.querySelector("#open-trade #tradeType").value;
+    
+        let profit = 0;
+    
+        // Calculate profit based on trade type
+        if (tradeType === "long") {
+            profit = ((exitPrice - entryPrice) * investment * leverage) / entryPrice;
+        } else if (tradeType === "short") {
+            profit = ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
+        }
+    
+        // Update the potential profit display
+        const potentialProfitDisplay = document.querySelector("#open-trade #potentialProfit");
+        potentialProfitDisplay.textContent = `Potential Profit: ${formatCurrency(profit)}`;
+    }
+    // Attach event listeners for inputs affecting potential profit
+        document.querySelector("#open-trade #entryPrice").addEventListener("input", updatePotentialProfit);
+        document.querySelector("#open-trade #exitPrice").addEventListener("input", updatePotentialProfit);
+        document.querySelector("#open-trade #investmentAmount").addEventListener("input", updatePotentialProfit);
+        document.querySelector("#open-trade #leverage").addEventListener("input", updatePotentialProfit);
+        document.querySelector("#open-trade #tradeType").addEventListener("change", updatePotentialProfit);
 
-    const worksheet = XLSX.utils.aoa_to_sheet(tradeData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Trades");
-    XLSX.writeFile(workbook, "Trade_History.xlsx");
-}
+        // Dynamic table row addition for Trade History
+        const tradeHistoryTable = document.getElementById('tradeHistoryTable');
+        const dummyTrades = [
+            { date: '2023-01-01', entry: 1000, exit: 1200, investment: 500, profit: 100 },
+            { date: '2023-02-15', entry: 1100, exit: 1150, investment: 400, profit: 20 },
+        ];
 
-// Add a download button to the page
-const downloadButton = document.createElement("button");
-downloadButton.textContent = "Download Trade History";
-downloadButton.style.margin = "20px auto";
-downloadButton.style.display = "block";
-downloadButton.style.padding = "10px 15px";
-downloadButton.style.backgroundColor = "#4CAF50";
-downloadButton.style.color = "#fff";
-downloadButton.style.border = "none";
-downloadButton.style.borderRadius = "5px";
-downloadButton.style.cursor = "pointer";
-downloadButton.addEventListener("click", downloadTradeHistory);
-document.body.appendChild(downloadButton);
 
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const tradeData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        // Interactive settings functionality (example toggle)
+        const settingsSection = document.getElementById('settings');
+        const settingsToggle = document.createElement('button');
+        settingsToggle.textContent = 'Toggle Dark Mode';
+        settingsToggle.style.padding = '10px';
+        settingsToggle.style.backgroundColor = '#1e90ff';
+        settingsToggle.style.color = '#ffffff';
+        settingsToggle.style.border = 'none';
+        settingsToggle.style.borderRadius = '5px';
+        settingsToggle.style.cursor = 'pointer';
 
-            if (!tradeData || tradeData.length < 2) {
-                alert("Uploaded file is empty or improperly formatted.");
-                return;
+        settingsToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        settingsSection.appendChild(settingsToggle);
+
+        // Analytics functionality
+        const analyticsCtx = document.getElementById('analyticsChart').getContext('2d');
+        const analyticsChart = new Chart(analyticsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Long Trades', 'Short Trades'],
+                datasets: [{
+                    label: 'Trade Distribution',
+                    data: [10, 5], // Replace with dynamic values
+                    backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                    borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        // Open and close profile modal
+        const profileModal = document.getElementById('profileModal');
+        document.querySelector('.user-info').addEventListener('click', () => {
+            profileModal.style.display = 'block';
+        });
+        document.querySelector('#profileModal .close').addEventListener('click', () => {
+            profileModal.style.display = 'none';
+        });
+
+        // Save profile settings
+        document.getElementById('profileForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const bio = document.getElementById('bio').value;
+            const location = document.getElementById('location').value;
+            const language = document.getElementById('language').value;
+            const username = document.getElementById('changeUsername').value;
+            const theme = document.getElementById('theme').value;
+
+            // Example handling of updates (adjust logic as needed)
+            if (username) {
+                document.querySelector('.user-info p').textContent = `Welcome, ${username}`;
             }
 
-            const tbody = document.querySelector("#tradeTable tbody");
-            tradeData.slice(1).forEach((row, index) => {
-                if (row.length < 8) {
-                    console.error(`Skipping row ${index + 2}: Incomplete data`, row);
-                    return; // Skip rows with missing columns
-                }
-
-                const [
-                    tradeDate,
-                    entryPrice,
-                    exitPrice,
-                    investment,
-                    leverage,
-                    tradeType,
-                    profitLoss,
-                    notes
-                ] = row;
-
-                if (!tradeDate || !entryPrice || !investment || !leverage || !tradeType) {
-                    console.error(`Skipping row ${index + 2}: Missing required fields`, row);
-                    return;
-                }
-
-                const tradeRow = document.createElement("tr");
-                tradeRow.innerHTML = `
-                    <td>${tradeDate}</td>
-                    <td>${formatCurrency(parseFloat(entryPrice) || 0)}</td>
-                    <td>${formatCurrency(parseFloat(exitPrice) || 0)}</td>
-                    <td>${formatCurrency(parseFloat(investment) || 0)}</td>
-                    <td>${leverage || "1"}</td>
-                    <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
-                    <td>${formatCurrency(parseFloat(profitLoss) || 0)}</td>
-                    <td>${notes || "N/A"}</td>
-                    <td>
-                        <button class="edit-button">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <button class="delete-button">
-                            <span class="material-icons">delete</span>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tradeRow);
-            });
-
-            alert("Trade history uploaded successfully.");
-        } catch (error) {
-            console.error("Error processing the uploaded file:", error);
-            alert("Failed to upload the file. Please ensure it is a valid XLSX file with the correct format.");
-        }
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-
-// Add an upload input to the page
-const uploadWrapper = document.createElement("div");
-uploadWrapper.style.margin = "20px auto";
-uploadWrapper.style.textAlign = "center";
-uploadWrapper.style.padding = "15px";
-uploadWrapper.style.backgroundColor = "#f4f4f4";
-uploadWrapper.style.borderRadius = "5px";
-uploadWrapper.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-uploadWrapper.style.maxWidth = "500px";
-
-const uploadLabel = document.createElement("label");
-uploadLabel.textContent = "Upload Trade History (XLSX):";
-uploadLabel.style.display = "block";
-uploadLabel.style.marginBottom = "10px";
-uploadLabel.style.fontFamily = "Arial, sans-serif";
-uploadLabel.style.fontSize = "1rem";
-uploadLabel.style.color = "#222";
-
-const uploadInput = document.createElement("input");
-uploadInput.type = "file";
-uploadInput.accept = ".xlsx";
-uploadInput.style.padding = "10px 15px";
-uploadInput.style.border = "2px solid #ddd";
-uploadInput.style.borderRadius = "5px";
-uploadInput.style.cursor = "pointer";
-uploadInput.style.backgroundColor = "#f4f4f4";
-uploadInput.style.display = "block";
-uploadInput.style.margin = "auto";
-uploadInput.addEventListener("change", handleFileUpload);
-
-uploadWrapper.appendChild(uploadLabel);
-uploadWrapper.appendChild(uploadInput);
-document.body.appendChild(uploadWrapper);
-
+            alert(`Profile updated:\nName: ${fullName}\nEmail: ${email}\nPhone: ${phone}\nBio: ${bio}\nLocation: ${location}\nLanguage: ${language}\nTheme: ${theme}`);
+            profileModal.style.display = 'none';
+        });
+      
