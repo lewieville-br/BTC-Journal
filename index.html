@@ -3,82 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitcoin Trading Journal</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="btc.png" type="image/png">
-    <!-- Include Material Icons -->
+    <title>CTR Trading Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=currency_bitcoin" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
 </head>
 <body>
-    <header class="header">
-        <h1>CTR Trades Trading Journal</h1>
-        <a href="https://lewieville-br.github.io/CTR-Trades.github.io/" style="text-decoration: none;">
-            <div class="bitcoin-logo">
-                <div class="b-text">
-                    <span>B</span>
-                    <div class="lines"></div>
+    <div id="login-container" class="login-container">
+        <span class="material-symbols-outlined" style="color: #ffd700; scale: 2;">currency_bitcoin</span>
+        <h2>Login to CTR Trading</h2>
+        
+        <form id="login-form">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Login</button>
+        </form>
+        <p id="login-message"></p>
+    </div>
+
+    <div class="dashboard-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h2>CTR Trading</h2>
+            <span class="material-symbols-outlined" style="color: #ffd700;">currency_bitcoin</span>
+            <br>
+            <nav>
+                <a href="#overview" class="active">Overview</a>
+                <a href="#trade-history">BTC Trades</a>
+                <a href="#analytics">Analytics</a>
+                <a href="#open-trade">Open a Trade</a> 
+                <a href="#settings">Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+ 
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <h1>Dashboard</h1>
+                <div class="user-info">
+                    <span class="material-icons">account_circle</span>
+                    <p id="usernamebox">Welcome, Andy Matthews</p>
+                </div>
+            </header>
+            <section id="open-trade" class="section hidden">
+                <h2>Open a Trade</h2>
+                <form id="tradeForm">
+                    <label for="tradeDate">Date:</label>
+                    <input type="date" id="tradeDate" name="tradeDate" required>
+        
+                    <label for="entryPrice">Entry Price:</label>
+                    <input type="number" id="entryPrice" name="entryPrice" step="0.01" required>
+        
+                    <label for="exitPrice">Exit Price:</label>
+                    <input type="number" id="exitPrice" name="exitPrice" step="0.01">
+        
+                    <label for="investmentAmount">Investment Amount:</label>
+                    <input type="number" id="investmentAmount" name="investmentAmount" step="0.01" required>
+        
+                    <label for="leverage">Leverage:</label>
+                    <input type="number" id="leverage" name="leverage" step="1" min="1" value="1" required>
+        
+                    <label for="tradeType">Trade Type:</label>
+                    <select id="tradeType" name="tradeType" required>
+                        <option value="long">Long</option>
+                        <option value="short">Short</option>
+                    </select>
+        
+                    <label for="notes">Notes:</label>
+                    <textarea id="notes" name="notes"></textarea>
+        
+                    <p id="potentialProfit" class="potential-profit">Potential Profit: $0.00</p>
+                    <button type="submit">Add Trade</button>
+                </form>
+            </section>
+        
+                <!-- Profile Modal -->
+
+            <div class="modal" id="profileModal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Profile Settings</h2>
+                    <form id="profileForm">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name">
+            
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="Enter your email">
+            
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="Enter your phone number">
+            
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" placeholder="Write something about yourself"></textarea>
+            
+                        <label for="location">Location</label>
+                        <input type="text" id="location" placeholder="Your current city or country">
+            
+                        <label for="language">Preferred Language</label>
+                        <select id="language">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="zh">Chinese</option>
+                        </select>
+            
+                        <label for="changeUsername">Username</label>
+                        <input type="text" id="changeUsername" placeholder="Choose a new username">
+            
+                        <label for="theme">Theme</label>
+                        <select id="theme">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="system">System Default</option>
+                        </select>
+            
+                        <button type="submit">Save Changes</button>
+                    </form>
                 </div>
             </div>
-        </a>
-    </header>
+            
+            <!-- Overview Section -->
+            <section id="overview" class="section">
+                <div id="btcPrice"></div>
+                <h2>Overview</h2>
+                <div class="cards">
+                    <div class="card">
+                        <h3>Total Profit</h3>
+                        <p id="totalProfit">$0.00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Average Return</h3>
+                        <p id="averageReturn">0.00%</p>
+                    </div>
+                    <div class="card">
+                        <h3>Active Trades</h3>
+                        <p id="activeTrades">0</p>
+                    </div>
+                </div>
+                <canvas id="profitTrendChart"></canvas>
+            </section>
 
-    <main class="main-content">
-        <section class="journal-form">
-            <h2>Add a Trade</h2>
-            <form id="tradeForm">
-                <label for="tradeDate">Date:</label>
-                <input type="date" id="tradeDate" name="tradeDate" required>
+            <section id="trade-history" class="section">
+                <h2>BTC Trades</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Entry Price</th>
+                            <th>Exit Price</th>
+                            <th>Investment</th>
+                            <th>Profit/Loss</th>
+                            <th>Leverage</th>
+                            <th>Trade Type</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradeHistoryTable">
+                        <!-- New rows will be dynamically added here -->
+                    </tbody>
+                </table>
+            </section>
 
-                <label for="entryPrice">Entry Price:</label>
-                <input type="number" id="entryPrice" name="entryPrice" step="0.01" required>
+            <!-- Analytics Section -->
+            <section id="analytics" class="section hidden">
+                <h2>Analytics</h2>
+                <canvas id="analyticsChart"></canvas>
+            </section>
 
-                <label for="exitPrice">Exit Price:</label>
-                <input type="number" id="exitPrice" name="exitPrice" step="0.01">
+            <!-- Settings Section -->
+            <section id="settings" class="section hidden">
+                <h2>Settings</h2>
+                <p>Customize your dashboard and preferences here.</p>
+            </section>
+        </main>
+    </div>
 
-                <label for="investmentAmount">Investment Amount:</label>
-                <input type="number" id="investmentAmount" name="investmentAmount" step="0.01" required>
-
-                <label for="leverage">Leverage:</label>
-                <input type="number" id="leverage" name="leverage" step="1" min="1" value="1" required>
-
-                <label for="tradeType">Trade Type:</label>
-                <select id="tradeType" name="tradeType" required>
-                    <option value="long">Long</option>
-                    <option value="short">Short</option>
-                </select>
-
-                <label for="notes">Notes:</label>
-                <textarea id="notes" name="notes"></textarea>
-
-                <p id="potentialProfit" class="potential-profit">Potential Profit: $0.00</p>
-                <button type="submit">Add Trade</button>
-            </form>
-        </section>
-
-        <section class="journal-entries">
-            <h2>Trade History</h2>
-            <table id="tradeTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Entry Price</th>
-                        <th>Exit Price</th>
-                        <th>Investment</th>
-                        <th>Leverage</th>
-                        <th>Trade Type</th>
-                        <th>Profit/Loss</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Trade entries will be dynamically added here -->
-                </tbody>
-            </table>
-        </section>
-    </main>
-
-    <script src="script.js"></script>
+    <script src="dashboard.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+
 </body>
 </html>
