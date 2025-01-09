@@ -144,8 +144,17 @@
                 <td>${leverage}</td>
                 <td>${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}</td>
                 <td>${notes}</td>
+                <td>
+                    <button class="edit-button" title="Edit">
+                        <span class="material-icons">edit</span>
+                    </button>
+                    <button class="delete-button" title="Delete">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </td>
             `;
             tradeHistoryTable.appendChild(newRow);
+            
     
             // Reset the form for new input
             tradeForm.reset();
@@ -153,6 +162,143 @@
             alert("Trade added to history!");
         });
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const tradeHistoryTable = document.getElementById("tradeHistoryTable");
+        const editTradeModal = document.getElementById("editTradeModal");
+        const editTradeForm = document.getElementById("editTradeForm");
+        let rowToEdit = null;
+    
+        // Open modal and populate form
+        tradeHistoryTable.addEventListener("click", function (event) {
+            if (event.target.closest(".edit-button")) {
+                rowToEdit = event.target.closest("tr"); // Store the row being edited
+                const cells = rowToEdit.querySelectorAll("td");
+    
+                // Populate modal form fields
+                document.getElementById("editTradeDate").value = cells[0].textContent;
+                document.getElementById("editEntryPrice").value = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g, ""));
+                document.getElementById("editExitPrice").value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g, ""));
+                document.getElementById("editInvestmentAmount").value = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, ""));
+                document.getElementById("editLeverage").value = cells[5].textContent.trim();
+                document.getElementById("editTradeType").value = cells[6].textContent.toLowerCase();
+                document.getElementById("editNotes").value = cells[7].textContent;
+    
+                // Show the modal
+                editTradeModal.style.display = "block";
+            }
+        });
+    
+        // Save changes and update the row
+        editTradeForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+    
+            if (rowToEdit) {
+                const updatedTrade = {
+                    date: document.getElementById("editTradeDate").value,
+                    entryPrice: parseFloat(document.getElementById("editEntryPrice").value),
+                    exitPrice: parseFloat(document.getElementById("editExitPrice").value) || 0,
+                    investment: parseFloat(document.getElementById("editInvestmentAmount").value),
+                    leverage: parseFloat(document.getElementById("editLeverage").value),
+                    tradeType: document.getElementById("editTradeType").value,
+                    notes: document.getElementById("editNotes").value || "N/A"
+                };
+    
+                // Update row with new values
+                rowToEdit.innerHTML = `
+                    <td>${updatedTrade.date}</td>
+                    <td>${formatCurrency(updatedTrade.entryPrice)}</td>
+                    <td>${formatCurrency(updatedTrade.exitPrice)}</td>
+                    <td>${formatCurrency(updatedTrade.investment)}</td>
+                    <td>${formatCurrency(
+                        updatedTrade.tradeType === "long"
+                            ? ((updatedTrade.exitPrice - updatedTrade.entryPrice) * updatedTrade.investment * updatedTrade.leverage) / updatedTrade.entryPrice
+                            : ((updatedTrade.entryPrice - updatedTrade.exitPrice) * updatedTrade.investment * updatedTrade.leverage) / updatedTrade.entryPrice
+                    )}</td>
+                    <td>${updatedTrade.leverage}</td>
+                    <td>${updatedTrade.tradeType.charAt(0).toUpperCase() + updatedTrade.tradeType.slice(1)}</td>
+                    <td>${updatedTrade.notes}</td>
+                    <td>
+                        <button class="edit-button" title="Edit">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="delete-button" title="Delete">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </td>
+                `;
+    
+                // Hide the modal
+                editTradeModal.style.display = "none";
+            }
+        });
+    
+        // Close the modal
+        document.querySelector("#editTradeModal .close").addEventListener("click", function () {
+            editTradeModal.style.display = "none";
+        });
+    });
+
+    //  the modal profit
+    function updateModalPotentialProfit() {
+        const entryPrice = parseFloat(document.getElementById("editEntryPrice").value) || 0;
+        const exitPrice = parseFloat(document.getElementById("editExitPrice").value) || 0;
+        const investment = parseFloat(document.getElementById("editInvestmentAmount").value) || 0;
+        const leverage = parseFloat(document.getElementById("editLeverage").value) || 1;
+        const tradeType = document.getElementById("editTradeType").value;
+    
+        let profit = 0;
+    
+        if (tradeType === "long") {
+            profit = ((exitPrice - entryPrice) * investment * leverage) / entryPrice;
+        } else if (tradeType === "short") {
+            profit = ((entryPrice - exitPrice) * investment * leverage) / entryPrice;
+        }
+    
+        const modalPotentialProfit = document.getElementById("modalPotentialProfit");
+        modalPotentialProfit.textContent = `Potential Profit: ${formatCurrency(profit)}`;
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        const editTradeForm = document.getElementById("editTradeForm");
+    
+        // Attach event listeners to modal fields
+        ["editEntryPrice", "editExitPrice", "editInvestmentAmount", "editLeverage", "editTradeType"].forEach((fieldId) => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener("input", updateModalPotentialProfit);
+                field.addEventListener("change", updateModalPotentialProfit); // For dropdowns like tradeType
+            }
+        });
+    });
+    document.getElementById("tradeHistoryTable").addEventListener("click", function (event) {
+        const target = event.target.closest("button"); // Get the clicked button
+
+        if (!target) return; // Ensure a button was clicked
+
+        if (target.classList.contains("edit-button")) {
+            // Edit functionality
+            const row = target.closest("tr");
+            const cells = row.querySelectorAll("td");
+
+            document.getElementById("editTradeDate").value = cells[0].textContent;
+            document.getElementById("editEntryPrice").value = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g, ""));
+            document.getElementById("editExitPrice").value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g, ""));
+            document.getElementById("editInvestmentAmount").value = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, ""));
+            document.getElementById("editLeverage").value = cells[5].textContent.trim();
+            document.getElementById("editTradeType").value = cells[6].textContent.toLowerCase();
+            document.getElementById("editNotes").value = cells[7].textContent;
+
+            updateModalPotentialProfit(); // Update potential profit display in the modal
+            document.getElementById("editTradeModal").style.display = "block"; // Show modal
+        } else if (target.classList.contains("delete-button")) {
+            // Delete functionality
+            const row = target.closest("tr");
+            if (row) {
+                row.remove(); // Remove the row from the table
+            }
+        }
+    });
+
     
     function updatePotentialProfit() {
         // Fetch values from the Add Trade form
@@ -189,6 +335,32 @@
             { date: '2023-02-15', entry: 1100, exit: 1150, investment: 400, profit: 20 },
         ];
 
+        // Handle Edit and Delete actions
+        document.getElementById("tradeHistoryTable").addEventListener("click", function (event) {
+            const target = event.target;
+
+            if (target.classList.contains("edit-button")) {
+                // Edit functionality
+                const row = target.closest("tr");
+                const cells = row.querySelectorAll("td");
+
+                // Populate the form with the existing trade data
+                document.getElementById("tradeDate").value = cells[0].textContent;
+                document.getElementById("entryPrice").value = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g, ""));
+                document.getElementById("exitPrice").value = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g, ""));
+                document.getElementById("investmentAmount").value = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, ""));
+                document.getElementById("leverage").value = cells[5].textContent.trim();
+                document.getElementById("tradeType").value = cells[6].textContent.toLowerCase();
+                document.getElementById("notes").value = cells[7].textContent;
+
+                // Remove the row being edited
+                row.remove();
+            } else if (target.classList.contains("delete-button")) {
+                // Delete functionality
+                const row = target.closest("tr");
+                row.remove(); // Simply remove the row from the table
+            }
+        });
 
 
         // Interactive settings functionality (example toggle)
