@@ -154,7 +154,7 @@
             </section>
 
             <section id="trade-history" class="section">
-                <h2>BTC Trades</h2>
+                <h2>Trade History</h2>
                 <table>
                     <thead>
                         <tr>
@@ -166,6 +166,7 @@
                             <th>Leverage</th>
                             <th>Trade Type</th>
                             <th>Notes</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="tradeHistoryTable">
@@ -173,6 +174,41 @@
                     </tbody>
                 </table>
             </section>
+
+            <div id="editTradeModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Edit Trade</h2>
+                    <form id="editTradeForm">
+                        <label for="editTradeDate">Date:</label>
+                        <input type="date" id="editTradeDate" name="editTradeDate" required>
+            
+                        <label for="editEntryPrice">Entry Price:</label>
+                        <input type="number" id="editEntryPrice" name="editEntryPrice" step="0.01" required>
+            
+                        <label for="editExitPrice">Exit Price:</label>
+                        <input type="number" id="editExitPrice" name="editExitPrice" step="0.01">
+            
+                        <label for="editInvestmentAmount">Investment Amount:</label>
+                        <input type="number" id="editInvestmentAmount" name="editInvestmentAmount" step="0.01" required>
+            
+                        <label for="editLeverage">Leverage:</label>
+                        <input type="number" id="editLeverage" name="editLeverage" step="1" min="1" required>
+            
+                        <label for="editTradeType">Trade Type:</label>
+                        <select id="editTradeType" name="editTradeType" required>
+                            <option value="long">Long</option>
+                            <option value="short">Short</option>
+                        </select>
+            
+                        <label for="editNotes">Notes:</label>
+                        <textarea id="editNotes" name="editNotes"></textarea>
+            
+                        <p id="modalPotentialProfit" class="potential-profit">Potential Profit: $0.00</p>
+                        <button type="submit">Save Changes</button>
+                    </form>
+                </div>
+            </div>            
 
             <!-- Analytics Section -->
             <section id="analytics" class="section hidden">
