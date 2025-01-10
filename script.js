@@ -205,6 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                 `;
 
+            // Update the Overview section dynamically
+            updateOverview();
             // Hide the modal
             editTradeModal.style.display = "none";
         }
@@ -427,7 +429,7 @@ function updateOverview() {
         totalProfit += profitLoss;
         totalInvestment += investment;
 
-        // Populate chart data
+        // Add data for chart updates
         profitData.push(profitLoss);
         dateLabels.push(tradeDate);
     });
@@ -435,14 +437,15 @@ function updateOverview() {
     // Calculate average return
     const averageReturn = totalInvestment > 0 ? ((totalProfit / totalInvestment) * 100).toFixed(2) : 0;
 
-    // Update the Overview section
+    // Update Overview section
     document.getElementById("totalProfit").textContent = formatCurrency(totalProfit);
     document.getElementById("averageReturn").textContent = `${averageReturn}%`;
     document.getElementById("activeTrades").textContent = activeTrades;
 
-    // Update the chart
+    // Update the chart dynamically
     updateProfitTrendChart(dateLabels, profitData);
 }
+
 
 let profitTrendChart = null; // Ensure a single instance of the chart
 
@@ -450,12 +453,10 @@ function updateProfitTrendChart(labels, data) {
     const ctx = document.getElementById("profitTrendChart").getContext("2d");
 
     if (profitTrendChart) {
-        // Update existing chart data
         profitTrendChart.data.labels = labels;
         profitTrendChart.data.datasets[0].data = data;
         profitTrendChart.update();
     } else {
-        // Initialize the chart if it doesn't exist
         profitTrendChart = new Chart(ctx, {
             type: "line",
             data: {
